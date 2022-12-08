@@ -1,0 +1,245 @@
+---
+title: "MATH 208 Final Project"
+subtitle: "Chuqi Wang 260842578"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Preparation: Setting working directory and loading the data.
+```{r preparation, message=FALSE ,comment=NA}
+setwd("~/Desktop/MATH 208/Final Project") # set working directory.
+library(readr) # install readr package to read data.
+# assign Happiness data.
+Happiness <- read_csv("~/Desktop/MATH 208/Final Project/Project_Happiness_data.csv")
+head(Happiness) # view first 6 rows of the data.
+```
+
+## Task 1: Family, Generosity and Freedom by Region in 2019.
+### Part(a) Using the appropriate plots and numerical summaries, evaluate the strength of the association of each of the six scores with the region variable.
+### For variable Economic Production score(GDPperCap), the density plot,  box plot and summary table are shown below.
+```{r part(a), message=FALSE, warning=FALSE, fig.cap="GDPperCap vs. Region Plots in Year 2019"}
+library(tidyverse) #install tidyverse package to make plots and summaries.
+# change the levels names of the Region to shorthand version and choose data only in year 2019.
+Happiness2019 = Happiness %>% filter(Year==2019) %>%
+  mutate(short_region=fct_recode(Region, "Saharan Africa"="Sub-Saharan Africa",
+                                 "ME/N Africa"="Middle East and Northern Africa",
+                                 "C/E Europe"="Central and Eastern Europe"))
+# Density plot.
+GDP_density = ggplot(Happiness2019, aes(x=GDPperCap, group=short_region))+
+  ggtitle("Density Plot")+geom_histogram(aes(y=..density..,fill=short_region))+
+  geom_density()+facet_wrap(~short_region)+xlab("GDPperCap score")
+# Box plot.
+GDP_boxplot = ggplot(Happiness2019, aes(x=short_region, y=GDPperCap))+
+  stat_boxplot(geom = "errorbar",width=0.35)+geom_boxplot()+
+   xlab("Region")+ylab("GDPperCap score")+ggtitle("Box Plot")
+library(ggpubr) # install ggpubr package to combine ggplots together.
+# Combine two plots together.
+ggarrange(GDP_density, GDP_boxplot, nrow=2)
+library(knitr) # install knitr package to make tables.
+# summary table.
+GDP_summary = Happiness2019 %>% group_by(Region) %>% 
+  summarise(n=n(), avg=mean(GDPperCap), med=median(GDPperCap), sd=sd(GDPperCap)) %>%
+  arrange(desc(avg))
+kable(GDP_summary, digits = 4, caption = "Summary table for GDPperCap in Year 2019", 
+      col.names = c("Region", "Count", "Average", "Median", "Stardand Deviation"))
+```
+
+From Figure 1 we found that the average GDPperCap score for Western Europe is the highest socre around 1.4 while the average score for Sub-Saharan Africa is the lowest around 0.45 among these six regions and its graph shows right skewed. For the rest of 4 regions, the mean values of score for GDPperCap have the range[0.90, 1.10]. For region Asia/SouthPac and Middle Eastern/Northern Africa, the distribution of the data is wide. The summary table is shown below which contains the total numbers of investigation, average score and median for Economic Production score.
+Table 1 shows similar association for GDPperCap score with Region, the average score of Western Europe is 1.3620 which is the highest score in six regions while the average score of Sub-Saharan Africa is 0.4662 which is the lowest.
+
+### For variable Trust in Government score(TrustGov), the density plot, boxplot and summary table are shown below.
+```{r (a), warning=FALSE, message=FALSE, fig.cap="TrustGov vs. Region Plots in Year 2019."}
+# Density plot.
+TrustGov_density = ggplot(Happiness2019, aes(x=TrustGov, group=short_region))+
+  ggtitle("Density Plot")+geom_histogram(aes(y=..density..,fill=short_region))+
+  geom_density()+facet_wrap(~short_region)
+# Box plot.
+TrustGov_boxplot = ggplot(Happiness2019, aes(x=short_region, y=TrustGov))+
+  stat_boxplot(geom = "errorbar", width=0.35)+geom_boxplot()+
+   xlab("Region")+ylab("TrustGov score")
+ggarrange(TrustGov_density, TrustGov_boxplot, nrow=2)
+```
+
+From Figure 2 we found that the average scores for Region are both very low except for Western Europe, the mean value of TrustGov score is also the highest but the interquartile range is large, while the mean value for Central and Estern Europe is very low and the density plots looks like left skewed. Expect for Middle Estern Africa and Western Europe, there are outliers in boxplots for the other four regions. 
+
+```{r (a)GDP, message=FALSE}
+# summary table.
+TrustGov_summary = Happiness2019 %>% group_by(Region) %>%
+  summarise(n=n(),avg=mean(TrustGov), med=median(TrustGov), sd=sd(TrustGov)) %>%
+  arrange(desc(avg))
+kable(TrustGov_summary, digits = 4, 
+      caption = "Summary table for Trust in Government in Year 2019.", 
+      col.names = c("Region", "Count", "Average", "Median", "Stardand Deviation"))
+```
+
+From table 2 we found that the average score for TrustGov of Western Europe is 0.2212 which is the highest comparing to other regions whereas the lowest value for average score is 0.0628 from Central and Eastern Europe. And for region Sub-Saharan Africa, the mean value score is 0.0876 which is the second lowest value.
+
+### For variable Family Support score(Family), the density plot, boxplot and summary table are shown below.
+```{r family, message=FALSE, fig.cap="Family vs. Region Plots in Year 2019."}
+# Density plot.
+Family_density = ggplot(Happiness2019, aes(x=Family, group=short_region))+
+  ggtitle("Density Plot")+geom_histogram(aes(y=..density..,fill=short_region))+
+  geom_density()+facet_wrap(~short_region)
+# Box plot.
+Family_boxplot = ggplot(Happiness2019, aes(x=short_region, y=Family))+
+  stat_boxplot(geom = "errorbar", width=0.35)+geom_boxplot()+
+   xlab("Region")+ylab("Family score")
+ggarrange(Family_density, Family_boxplot, nrow=2)
+# summary table.
+Family_summary = Happiness2019 %>% group_by(Region) %>%
+  summarise(n=n(),avg=mean(Family), med=median(Family), sd=sd(Family)) %>%
+  arrange(desc(avg))
+kable(Family_summary, digits = 4, 
+      caption = "Summary table for Family support score in Year 2019.", 
+      col.names = c("Region", "Count", "Average", "Median", "Stardand Deviation"))
+```
+
+Figure 3 indicates the mean family score for Western Europe is the highest among six regions and the interquartile range is very small. The average score for Saharan Africa is the lowest again and the distribution of the data is wide. The plots of C/E Europe and Americas/Carib show obvious left skewed distributions.
+Table 3 shows the highest average family score of Western Europe is 1.4839 whereas the lowest score of region Sub-Saharan Africa is 0.9381.
+
+### For variable Perceived Freedom score(Freedom), the density plot, box plot and summary table are shown below.
+```{r (a)freedom, message=FALSE, fig.cap="Freedom vs. Region Plots in Year 2019."}
+# Density plot.
+Freedom_density = ggplot(Happiness2019, aes(x=Freedom, group=short_region))+
+  ggtitle("Density Plot")+geom_histogram(aes(y=..density..,fill=short_region))+
+  geom_density()+facet_wrap(~short_region)
+# Box plot.
+Freedom_boxplot = ggplot(Happiness2019, aes(x=short_region, y=Freedom))+
+  stat_boxplot(geom = "errorbar", width=0.35)+geom_boxplot()+
+   xlab("Region")+ylab("Freedom score")
+ggarrange(Freedom_density, Freedom_boxplot, nrow=2)
+```
+
+From Figure 4 we found the average freedom score for Western Europe and Asia/SouthPac are both very high, the lowest value is shown in Middle Eastern and Northern Africa. However, the boxplot of ME/N Africa indicates much wider distribution than the other plots. In addition, the mean value of freedom score for Sub-Saharan Africa is about 0.35 and the score is still quite small comparing to other regions.
+
+```{r part(a)freedom, message=FALSE}
+Freedom_summary = Happiness2019 %>% group_by(Region) %>%
+  summarise(n=n(),avg=mean(Freedom), med=median(Freedom), sd=sd(Freedom)) %>%
+  arrange(desc(avg))
+kable(Freedom_summary, digits = 4, 
+      caption = "Summary table for Perceived Freedom score in Year 2019.", 
+      col.names = c("Region", "Count", "Average", "Median", "Stardand Deviation"))
+```
+
+Table 4 shows that the average freedom score for Western Europe is the highest and the value is 0.4826 while the average score for Middle East and Northern Africa is 0.3179 and it's the lowest among the six regions. In addition, the mean vlaue of freedom score for Sub-Saharan Africa is the second lowest and has value 0.3422.
+
+### For variable Perceived Health and Life Expectancy score(HealthLifeExp), the density plot, box plot and summary table are shown below.
+```{r (a)health, message=FALSE, fig.cap="HealthLifeExp vs. Region Plots in Year 2019."}
+# Density plot.
+HealthLifeExp_density = ggplot(Happiness2019, aes(x=HealthLifeExp, group=short_region))+
+  ggtitle("Density Plot")+geom_histogram(aes(y=..density..,fill=short_region))+
+  geom_density()+facet_wrap(~short_region)
+# Box plot.
+HealthLifeExp_boxplot = ggplot(Happiness2019, aes(x=short_region, y=HealthLifeExp))+
+  stat_boxplot(geom = "errorbar", width=0.35)+geom_boxplot()+
+   xlab("Region")+ylab("HealthLifeExp score")
+ggarrange(HealthLifeExp_density, HealthLifeExp_boxplot, nrow=2)
+# summary table.
+Health_summary = Happiness2019 %>% group_by(Region) %>%
+  summarise(n=n(),avg=mean(HealthLifeExp), med=median(HealthLifeExp),
+            sd=sd(HealthLifeExp)) %>% arrange(desc(avg))
+kable(Health_summary, digits = 4, 
+      caption = "Summary table for Perceived Health and Life Expectancy score in Year 2019.", 
+      col.names = c("Region", "Count", "Average", "Median", "Stardand Deviation"))
+```
+
+Figure 5 shows that the highest average HealthLifeExp score is in region Western Europe and the density plot for this region has concentrated distribution. The average score for Sub-Saharan Africa is the lowest again. The average scores for the other four regions are between 0.75 and 0.80. If we looke at Table 5, the average score for Western Europe is 1.0138 while that for Sub-Saharan Africa is only 0.4408.
+
+### For variale Perceived Generosity score(Generosity), the density plot, box plot and summary table are shown below.
+```{r part(a)generosity, message=FALSE, fig.cap="Generosity vs. Regions Plots in Year 2019."}
+# Density plot.
+Gen_density = ggplot(Happiness2019, aes(x=Generosity, group=short_region))+
+  ggtitle("Density Plot")+geom_histogram(aes(y=..density..,fill=short_region))+
+  geom_density()+facet_wrap(~short_region)
+# Box plot.
+Gen_boxplot = ggplot(Happiness2019, aes(x=short_region, y=Generosity))+
+  stat_boxplot(geom = "errorbar", width=0.35)+geom_boxplot()+
+   xlab("Region")+ylab("Generosity score")
+ggarrange(Gen_density, Gen_boxplot, nrow=2)
+```
+
+Figure 6 illustrates that the average Generosity scores for both Western Europe and Asia/SouthPac are high, the plots for these two regions has wide distribution. And the average scores for other four regions are below 0.2 which is very small.
+```{r (a)gen, message=FALSE}
+# summary table.
+Gen_summary = Happiness2019 %>% group_by(Region) %>%
+  summarise(n=n(),avg=mean(Generosity), med=median(Generosity),
+            sd=sd(Generosity)) %>% arrange(desc(avg))
+kable(Gen_summary, digits = 4, 
+      caption = "Summary table for Perceived Generosity score in Year 2019.", 
+      col.names = c("Region", "Count", "Average", "Median", "Stardand Deviation"))
+```
+The highest average score is 0.2520 from Asia/SouthPac and the second highest score is 0.2210 from Western Europe while for Central and Eastern Europe the average score is only 0.1412.
+
+### Part(b) Does the association of between score and region vary amongst the scores or do all the scores seem to seem to show the same pattern? Explain brieﬂy the reasons behind your assessment.
+From part(a) we found that the high average scores of the six variables always show in region Western Europe, and the low scores are always from region Sub-Saharan Africa and Middle East and North Africa in 2019. We can't say the association is true for all the six variables. For instance, if we look table 6:Summary table for variable Perceived Generosity score, it shows that the average Generosity score for Sub-Saharan Africa is not very low comparing to average scores from other regions. However, for most of variables scores, the summary table and plots indicate the same pattern which high average scores from Western Europe and low average scores from Sub-Saharan Africa and Middle East and North Africa in Year 2019.
+
+## Task 2: Predicted Happiness score
+### Part(a) Compute the happiness score for each country for each year.
+### The happiness score for each country for each are shown below in the tibble.
+```{r task2(a), message=FALSE}
+Happiness %>% group_by(Year, Country) %>%
+  mutate(happiness=GDPperCap+TrustGov+Family+Freedom+HealthLifeExp+Generosity) %>% 
+  summarise(happiness) %>% pivot_wider(names_from = Year, values_from=happiness)
+```
+
+### Part(b) Compute the minimum and maximum happiness score over all countries for each region in each year. In other words, you should have a minimum and maximum happiness score for each region for each year. Plot how the minimum and maximum happiness score for each region varies over time, i.e. with year on the x-axis and lines for the minimum and maximum for each region on the y-axis. Hint: You will want to have multiple panels in your plot, either one each for the minimum and maximum OR one for each region. Do the minimum and/or maximum happiness scores change much over time? Explain your answer.
+```{r task2(b), message=FALSE}
+min_max_happiness = Happiness %>% group_by(Year,Region) %>% drop_na() %>% 
+  mutate(happiness=GDPperCap+TrustGov+Family+Freedom+HealthLifeExp+Generosity) %>% 
+  summarise(min=min(happiness), max=max(happiness))
+# Line plot.
+ggplot(min_max_happiness, aes(x=Year, y=min, group=Region, col=Region))+
+  geom_line()+geom_point()+
+  labs(y="minimum happiness score", 
+       title = "Line plot of minimum happiness score over 5 years for each regions")
+
+ggplot(min_max_happiness, aes(x=Year, y=max, group=Region, col=Region))+
+  geom_line()+geom_point()+
+  labs(y="maximum happiness score", 
+       title = "Line plot of maximum happiness score over 5 years for each regions")
+```
+
+* For minimum happiness score of these 6 regions, the line plot illustrates that for all six regions the minimum happiness scores decrease between 2015 and 2016 and then increase in 2017. From 2017 to 2019, the minimum happiness scores for most of regions have a slight increasing except for Middle Ease and Northern Africa and Asia/SouthPac. Over the five years, the minimum happiness scores for Western Europe ranked first and increase from 3.0 to almost 3.5. The similar increasing was found in Central/Eastern Europe and Sub-Saharan Africa, the minimum scores rise from 2.6 to 2.8 and from 1.1 to 1.5 respectively. For the other regions, the minimum happiness scores have decreasing trend over the five years. In conclusion, for Western Europe, Central and Eastern Europe and Sub-Saharan Africa, the minimum happiness scores increase obviously while or the other three regions, the minimum happiness scores decrease signficantly between 2015 and 2019.
+* For maximum happiness score of the 6 regions, the line plot indicates that for all six regions the maximum happiness scores have a signficant decreasing from 2015 to 2016 and then reincrease obviously between 2016 and 2017. Between the period of 2017 and 2019, except for Middle East and Northern Africa, the maximum happiness scores for the other five regions increase slightly. In addition, the maximum scores for Middle East and Northern Africa is the only one that decreased from 5.0 to 4.76 approximately over the half decade while the maximum score for other five regions have an obvious increasing. Overall, except for Americas/Carb region, the maximum happiness scores for the other regions change much between 2015 and 2019.
+
+## Task 3: Happiest((well, predicted happiest) countries over time
+### Part(a) Create a table with the 10 countries who have the highest average happiness scores over the ﬁve years of the data.
+```{r task3(a), message=FALSE}
+# Use the tibble from task 2(a) and assign it.
+country_happiness = Happiness %>% group_by(Year, Country) %>%
+  mutate(happiness=GDPperCap+TrustGov+Family+Freedom+HealthLifeExp+Generosity) %>% 
+  summarise(happiness) %>% pivot_wider(names_from = Year, values_from=happiness)
+# Rename the column names.
+country_happiness = rename(country_happiness, c("Year2015"="2015", "Year2016"="2016",
+                                                "Year2017"="2017","Year2018"="2018",
+                                                "Year2019"="2019"))
+hightop10= country_happiness %>%
+  mutate(avg=(Year2015+Year2016+Year2017+Year2018+Year2019)/5) %>% 
+  select(Country, avg) %>% arrange(desc(avg)) %>% filter(avg>=4.982)
+kable(hightop10, caption = "Top 10 highest average happiness scores table", 
+      col.names = c("Country", "Average score"), digits = 4)
+```
+
+Table 7 is shown above that contains the top 10 countries that have highest average happiness score over the five years of the data.
+
+### Part(b) Create a table with the 10 countries who have the largest positive change in happiness score from 2015 to 2019, i.e. the 10 countries with the largest positive value of the diﬀerence between their 2019 happiness score and their 2015 happiness score.
+```{r task3(b), message=FALSE}
+# Use the tibble from task 3(a).
+difftop10 = country_happiness %>% mutate(diff = Year2019-Year2015) %>% 
+  select(Country, diff) %>% arrange(desc(diff)) %>% filter(diff>=0.5979)
+kable(difftop10, caption = "Top 10 largest positive change in happiness score table",
+      col.names = c("Country", "Change score"), digits = 4)
+```
+
+Table 8 is shown above that indicates the top 10 countries who have the largest positive change in happiness score from 2015 to 2019.
+
+
+
+
+
+
+
+
